@@ -1,49 +1,87 @@
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPS Entregador - Entrega Silenciosa</title>
+    <style>
+        body { font-family: sans-serif; background: #111827; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { width: 90%; max-width: 400px; background: #1f2937; padding: 30px; border-radius: 24px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); }
+        input { width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #374151; background: #111827; color: white; margin-bottom: 20px; font-size: 1.1rem; text-align: center; outline: none; }
+        input:focus { border-color: #10b981; }
+        .btn-gps { background: #10b981; color: white; border: none; padding: 20px; border-radius: 15px; width: 100%; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-gps:active { transform: scale(0.98); }
+        #status { margin-top: 20px; color: #9ca3af; font-size: 0.85rem; line-height: 1.5; }
+        .erro { color: #ef4444; font-weight: bold; }
+        .sucesso { color: #10b981; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2 style="margin-top:0">GPS Entregador</h2>
+        <p style="font-size: 0.8rem; color: #9ca3af;">Digite o número do pedido para iniciar</p>
+        <input type="text" id="idPedido" placeholder="Ex: 1050">
+        <button class="btn-gps" id="btn">INICIAR RASTREIO</button>
+        <div id="status">Aguardando início da rota...</div>
+    </div>
 
-    const firebaseConfig = { /* Suas chaves aqui */ };
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const btn = document.getElementById('btn');
-    const statusTxt = document.getElementById('status');
-
-    btn.onclick = function() {
-        const id = document.getElementById('idPedido').value.trim();
-        if(!id) { alert("Digite o número do pedido!"); return; }
-
-        statusTxt.innerText = "Solicitando permissão do sistema...";
-        
-        // Configurações de alta precisão
-        const gpsOptions = {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0
+        const firebaseConfig = {
+            apiKey: "AIzaSyBWW6TL0TrXq35ei9XdJDwQxtmSk2C-u9Y",
+            authDomain: "entregasilenciosa-34182.firebaseapp.com",
+            databaseURL: "https://entregasilenciosa-34182-default-rtdb.firebaseio.com",
+            projectId: "entregasilenciosa-34182",
+            storageBucket: "entregasilenciosa-34182.firebasestorage.app",
+            messagingSenderId: "412313322568",
+            appId: "1:412313322568:web:232dcd285d40cb9b1cc47d"
         };
 
-        navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                btn.innerText = "SINAL ATIVO";
-                btn.style.background = "#3b82f6";
-                statusTxt.innerHTML = "<b style='color:#10b981'>📍 GPS CONECTADO!</b><br>Sinal enviado para o pedido: " + id;
-                
-                // Monitoramento contínuo
-                navigator.geolocation.watchPosition((p) => {
-                    update(ref(db, 'pedidos/' + id), { 
-                        lat: p.coords.latitude, 
-                        lng: p.coords.longitude,
-                        ultimaAtualizacao: Date.now()
-                    });
-                }, null, gpsOptions);
-            },
-            (err) => {
-                // SE O GPS ESTIVER BLOQUEADO, ELE AVISA AQUI:
-                console.error(err);
-                statusTxt.innerHTML = "<b style='color:#ef4444'>ERRO DE ACESSO AO GPS:</b><br>Clique no ícone de configurações ao lado do link lá no topo e mude 'Localização' para PERMITIR.";
-                alert("O GPS está bloqueado. Por favor, autorize nas configurações do navegador.");
-            }, 
-            gpsOptions
-        );
-    };
-</script>
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        const btn = document.getElementById('btn');
+        const statusTxt = document.getElementById('status');
+
+        btn.onclick = function() {
+            const id = document.getElementById('idPedido').value.trim();
+            
+            if(!id) {
+                alert("Por favor, digite o número do pedido antes de iniciar.");
+                return;
+            }
+
+            statusTxt.innerText = "Buscando sinal de satélite...";
+            
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    btn.innerText = "SINAL ATIVO";
+                    btn.style.background = "#3b82f6";
+                    statusTxt.innerHTML = "<span class='sucesso'>📍 GPS CONECTADO!</span><br>Transmitindo Pedido: #" + id;
+                    
+                    // Atualização em tempo real
+                    navigator.geolocation.watchPosition((p) => {
+                        update(ref(db, 'pedidos/' + id), { 
+                            lat: p.coords.latitude, 
+                            lng: p.coords.longitude,
+                            ultimaAtualizacao: Date.now()
+                        });
+                    }, (err) => {
+                        statusTxt.innerHTML = "<span class='erro'>Perda de sinal GPS.</span>";
+                    }, { enableHighAccuracy: true });
+                },
+                (err) => {
+                    if(err.code === 1) {
+                        statusTxt.innerHTML = "<span class='erro'>GPS BLOQUEADO!</span><br>Autorize a localização no ícone de cadeado (topo da tela).";
+                    } else {
+                        statusTxt.innerHTML = "<span class='erro'>Erro técnico:</span> " + err.message;
+                    }
+                }, 
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        };
+    </script>
+</body>
+</html>
