@@ -6,19 +6,19 @@
     <title>Rastreio - Entrega Silenciosa</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f0f2f5; }
-        #map { height: 100vh; width: 100%; z-index: 1; }
-        .info-card { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); width: 85%; max-width: 380px; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 1000; text-align: center; }
-        .pulse { height: 10px; width: 10px; background: #10b981; border-radius: 50%; display: inline-block; margin-right: 10px; animation: p 1.5s infinite; }
-        @keyframes p { 0% { transform: scale(0.9); opacity: 1; } 100% { transform: scale(2.4); opacity: 0; } }
-        .btn-emergencia { background: #3b82f6; color: white; border: none; padding: 10px; border-radius: 8px; margin-top: 10px; cursor: pointer; display: none; }
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: #e5e7eb; }
+        #map { height: 100vh; width: 100vw; position: absolute; top: 0; bottom: 0; z-index: 1; }
+        .info-card { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 360px; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.15); z-index: 1000; text-align: center; border-bottom: 4px solid #10b981; }
+        .pulse { height: 10px; width: 10px; background: #10b981; border-radius: 50%; display: inline-block; margin-right: 8px; animation: p 1.5s infinite; }
+        @keyframes p { 0% { transform: scale(0.9); opacity: 1; } 100% { transform: scale(2.2); opacity: 0; } }
+        h4 { margin: 0; font-size: 1rem; color: #1f2937; }
+        p { margin: 5px 0 0; color: #6b7280; font-size: 0.8rem; }
     </style>
 </head>
 <body>
     <div class="info-card">
-        <h4 id="titulo"><span class="pulse"></span>Buscando Entregador...</h4>
-        <p id="msg" style="font-size: 0.85rem; color: #555;">Conectando ao sinal de satélite...</p>
-        <button id="btnManual" class="btn-emergencia">Ver Mapa Agora</button>
+        <h4 id="titulo"><span class="pulse"></span>Buscando sua Entrega</h4>
+        <p id="msg">Aguardando sinal do entregador...</p>
     </div>
     <div id="map"></div>
 
@@ -39,65 +39,45 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-
-        // Pega ID da URL
         const urlParams = new URLSearchParams(window.location.search);
         const pedidoId = urlParams.get('id');
 
-        // Inicializa o Mapa (Foco inicial no Brasil)
-        const map = L.map('map', { zoomControl: false }).setView([-15.78, -47.92], 4);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/hot/{z}/{x}/{y}.png').addTo(map);
+        // Inicializa o mapa com fundo cinza enquanto carrega
+        const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-15.78, -47.92], 4);
+        
+        // Camada de mapa mais leve e estável
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
 
-        const iconMoto = L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/71/71422.png', iconSize: [45, 45], iconAnchor: [22, 22] });
+        const iconMoto = L.icon({ 
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/71/71422.png', 
+            iconSize: [40, 40], 
+            iconAnchor: [20, 20] 
+        });
+        
         let marker = null;
-        let cliPos = null;
 
-        // Tenta pegar localização do cliente (mas não trava se falhar)
-        navigator.geolocation.getCurrentPosition((c) => {
-            cliPos = { lat: c.coords.latitude, lng: c.coords.longitude };
-        }, () => { console.log("Cliente não autorizou GPS."); });
-
-        function dist(l1, o1, l2, o2) {
-            const R = 6371e3;
-            const p1 = l1 * Math.PI/180; const p2 = l2 * Math.PI/180;
-            const dl = (l2-l1) * Math.PI/180; const dg = (o2-o1) * Math.PI/180;
-            const a = Math.sin(dl/2) * Math.sin(dl/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dg/2) * Math.sin(dg/2);
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        }
-
-        if(!pedidoId) {
-            document.getElementById('titulo').innerText = "Pedido não identificado";
-        } else {
-            // Fica ouvindo o entregador
+        if (pedidoId) {
             onValue(ref(db, 'pedidos/' + pedidoId), (snap) => {
                 const data = snap.val();
-                if(data && data.lat && data.lat !== 0) {
-                    const mPos = [data.lat, data.lng];
+                if (data && data.lat) {
+                    const pos = [data.lat, data.lng];
                     
-                    if(!marker) {
-                        marker = L.marker(mPos, {icon: iconMoto}).addTo(map);
-                        map.setView(mPos, 17);
+                    if (!marker) {
+                        marker = L.marker(pos, { icon: iconMoto }).addTo(map);
+                        map.setView(pos, 16);
                     } else {
-                        marker.setLatLng(mPos);
-                        map.panTo(mPos);
+                        marker.setLatLng(pos);
                     }
-
-                    document.getElementById('titulo').innerText = "Pedido: #" + pedidoId;
                     
-                    if(cliPos) {
-                        const d = dist(cliPos.lat, cliPos.lng, data.lat, data.lng);
-                        document.getElementById('msg').innerText = `Entregador a ${Math.round(d)} metros de você.`;
-                        if(d < 200) {
-                            if("vibrate" in navigator) navigator.vibrate([500, 200, 500]);
-                            document.getElementById('titulo').innerText = "🚨 ELE CHEGOU!";
-                        }
-                    } else {
-                        document.getElementById('msg').innerText = "Motoboy em movimento. Acompanhe pelo mapa!";
-                    }
-                } else {
-                    document.getElementById('msg').innerText = "Aguardando o motoboy iniciar o rastreio...";
+                    // FORÇA O MAPA A APARECER COMPLETO
+                    setTimeout(() => { map.invalidateSize(); }, 500);
+                    
+                    document.getElementById('titulo').innerText = "Pedido #" + pedidoId + " em rota";
+                    document.getElementById('msg').innerText = "Acompanhe o entregador em tempo real.";
                 }
             });
+        } else {
+            document.getElementById('msg').innerText = "Link de rastreio inválido.";
         }
     </script>
 </body>
