@@ -16,24 +16,42 @@
     <div class="card">
         <h1>Iniciar Rota</h1>
         <button class="btn-gps" id="btn">ATIVAR GPS</button>
-        <div id="status">Aguardando início...</div>
+        <div id="status">Clique acima para iniciar o sinal</div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        const firebaseConfig = { /* COLE SUAS CHAVES AQUI */ };
+        const firebaseConfig = {
+            apiKey: "AIzaSyBWW6TL0TrXq35ei9XdJDwQxtmSk2C-u9Y",
+            authDomain: "entregasilenciosa-34182.firebaseapp.com",
+            databaseURL: "https://entregasilenciosa-34182-default-rtdb.firebaseio.com",
+            projectId: "entregasilenciosa-34182",
+            storageBucket: "entregasilenciosa-34182.firebasestorage.app",
+            messagingSenderId: "412313322568",
+            appId: "1:412313322568:web:232dcd285d40cb9b1cc47d"
+        };
+
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
         document.getElementById('btn').onclick = function() {
-            this.innerText = "RASTREAMENTO ATIVO";
-            this.classList.add('active');
-            navigator.geolocation.watchPosition((pos) => {
-                update(ref(db, 'pedidos/PED123'), { lat: pos.coords.latitude, lng: pos.coords.longitude });
-                document.getElementById('status').innerText = "📍 Localização sendo enviada...";
-            }, null, { enableHighAccuracy: true });
+            const statusTxt = document.getElementById('status');
+            this.innerText = "SOLICITANDO GPS...";
+            
+            navigator.geolocation.getCurrentPosition((pos) => {
+                this.innerText = "RASTREAMENTO ATIVO";
+                this.classList.add('active');
+                statusTxt.innerText = "📍 Localização conectada!";
+                
+                navigator.geolocation.watchPosition((p) => {
+                    update(ref(db, 'pedidos/PED123'), { lat: p.coords.latitude, lng: p.coords.longitude });
+                    statusTxt.innerText = "Sinal enviado: " + new Date().toLocaleTimeString();
+                }, null, { enableHighAccuracy: true });
+            }, (err) => {
+                statusTxt.innerText = "ERRO: Autorize o GPS nas configurações do seu navegador.";
+            }, { timeout: 10000 });
         };
     </script>
 </body>
