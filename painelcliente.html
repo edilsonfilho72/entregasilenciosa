@@ -3,29 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rastreio - Entrega Silenciosa</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <title>Painel Lojista - Entrega Silenciosa</title>
     <style>
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: #e5e7eb; }
-        #map { height: 100vh; width: 100vw; position: absolute; top: 0; bottom: 0; z-index: 1; }
-        .info-card { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 360px; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.15); z-index: 1000; text-align: center; border-bottom: 4px solid #10b981; }
-        .pulse { height: 10px; width: 10px; background: #10b981; border-radius: 50%; display: inline-block; margin-right: 8px; animation: p 1.5s infinite; }
-        @keyframes p { 0% { transform: scale(0.9); opacity: 1; } 100% { transform: scale(2.2); opacity: 0; } }
-        h4 { margin: 0; font-size: 1rem; color: #1f2937; }
-        p { margin: 5px 0 0; color: #6b7280; font-size: 0.8rem; }
+        :root { --primary: #2c3e50; --accent: #27ae60; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .card { background: white; padding: 35px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 360px; text-align: center; border-top: 6px solid var(--accent); }
+        h1 { font-size: 1.3rem; color: var(--primary); margin: 0; }
+        span { color: var(--accent); font-weight: bold; }
+        p { font-size: 0.85rem; color: #7f8c8d; margin: 10px 0 20px; }
+        input { width: 100%; padding: 14px; border: 2px solid #edf2f7; border-radius: 10px; margin-bottom: 15px; box-sizing: border-box; font-size: 1rem; outline: none; text-align: center; }
+        .btn-despacho { background: var(--accent); color: white; border: none; padding: 18px; border-radius: 12px; width: 100%; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-despacho:hover { background: #219150; transform: translateY(-2px); }
+        .link-area { margin-top: 25px; padding: 15px; background: #f9f9f9; border-radius: 12px; display: none; border: 1px dashed var(--accent); }
+        .btn-copy { background: white; border: 1px solid #ddd; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; margin-top: 10px; color: var(--primary); width: 100%; }
     </style>
 </head>
 <body>
-    <div class="info-card">
-        <h4 id="titulo"><span class="pulse"></span>Buscando sua Entrega</h4>
-        <p id="msg">Aguardando sinal do entregador...</p>
+    <div class="card">
+        <h1>ENTREGA <span>SILENCIOSA</span></h1>
+        <p>Logística Silenciosa e Eficiente</p>
+        <input type="text" id="pedido" placeholder="Nº do Pedido (Ex: 1050)">
+        <button class="btn-despacho" id="btnDisparar">DESPACHAR AGORA</button>
+        <div id="linkArea" class="link-area">
+            <span style="font-size: 0.75rem; color: #666;">Link do Cliente:</span><br>
+            <strong id="linkFinal" style="color: var(--accent); font-size: 0.7rem; word-break: break-all;"></strong><br>
+            <button class="btn-copy" id="btnCopiar">Copiar para WhatsApp</button>
+        </div>
     </div>
-    <div id="map"></div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBWW6TL0TrXq35ei9XdJDwQxtmSk2C-u9Y",
@@ -39,46 +47,20 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const urlParams = new URLSearchParams(window.location.search);
-        const pedidoId = urlParams.get('id');
 
-        // Inicializa o mapa com fundo cinza enquanto carrega
-        const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-15.78, -47.92], 4);
-        
-        // Camada de mapa mais leve e estável
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
-
-        const iconMoto = L.icon({ 
-            iconUrl: 'https://cdn-icons-png.flaticon.com/512/71/71422.png', 
-            iconSize: [40, 40], 
-            iconAnchor: [20, 20] 
-        });
-        
-        let marker = null;
-
-        if (pedidoId) {
-            onValue(ref(db, 'pedidos/' + pedidoId), (snap) => {
-                const data = snap.val();
-                if (data && data.lat) {
-                    const pos = [data.lat, data.lng];
-                    
-                    if (!marker) {
-                        marker = L.marker(pos, { icon: iconMoto }).addTo(map);
-                        map.setView(pos, 16);
-                    } else {
-                        marker.setLatLng(pos);
-                    }
-                    
-                    // FORÇA O MAPA A APARECER COMPLETO
-                    setTimeout(() => { map.invalidateSize(); }, 500);
-                    
-                    document.getElementById('titulo').innerText = "Pedido #" + pedidoId + " em rota";
-                    document.getElementById('msg').innerText = "Acompanhe o entregador em tempo real.";
-                }
+        document.getElementById('btnDisparar').onclick = () => {
+            const id = document.getElementById('pedido').value.trim() || Math.floor(Math.random() * 9000 + 1000);
+            set(ref(db, 'pedidos/' + id), { status: "Em Rota", lat: 0, lng: 0, t: Date.now() }).then(() => {
+                const urlBase = window.location.href.replace('painellojista.html', 'painelcliente.html');
+                document.getElementById('linkFinal').innerText = `${urlBase}?id=${id}`;
+                document.getElementById('linkArea').style.display = 'block';
             });
-        } else {
-            document.getElementById('msg').innerText = "Link de rastreio inválido.";
-        }
+        };
+
+        document.getElementById('btnCopiar').onclick = () => {
+            navigator.clipboard.writeText(document.getElementById('linkFinal').innerText);
+            alert("Link copiado!");
+        };
     </script>
 </body>
 </html>
