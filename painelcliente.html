@@ -3,21 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acompanhe sua Entrega</title>
+    <title>Acompanhe sua Entrega - Silenciosa</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #eee; }
+        :root { --primary: #111827; --accent: #10b981; --warning: #f59e0b; }
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; transition: background-color 0.5s ease; }
         #map { height: 100vh; width: 100vw; position: absolute; z-index: 1; }
-        .info-card { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 360px; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 1000; text-align: center; }
-        .pulse { height: 10px; width: 10px; background: #10b981; border-radius: 50%; display: inline-block; margin-right: 8px; animation: p 1.5s infinite; }
-        @keyframes p { 0% { transform: scale(0.9); opacity: 1; } 100% { transform: scale(2.2); opacity: 0; } }
+        
+        .info-card { 
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%); 
+            width: 90%; max-width: 380px; background: white; padding: 20px; 
+            border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+            z-index: 1000; text-align: center; border-bottom: 5px solid var(--accent);
+        }
+
+        .pulse { 
+            height: 12px; width: 12px; background: var(--accent); 
+            border-radius: 50%; display: inline-block; margin-right: 10px; 
+            animation: p 1.5s infinite; 
+        }
+
+        @keyframes p { 
+            0% { transform: scale(0.9); opacity: 1; } 
+            100% { transform: scale(2.5); opacity: 0; } 
+        }
+
+        h4 { margin: 0; font-size: 1.1rem; color: var(--primary); }
+        p { margin: 8px 0 0; color: #4b5563; font-size: 0.9rem; font-weight: 500; }
+        
+        /* Estilo para o alerta de chegada */
+        .chegou { background-color: #fff9c4 !important; }
+        .chegou .info-card { border-bottom: 5px solid #d32f2f; }
     </style>
 </head>
 <body>
+
     <div class="info-card">
-        <h4 id="titulo"><span class="pulse"></span>Rastreando Pedido...</h4>
-        <p id="msg" style="font-size: 0.85rem; color: #666;">Aguardando sinal do entregador...</p>
+        <h4 id="titulo"><span class="pulse"></span>Monitorando Entrega</h4>
+        <p id="msg">Buscando sinal do motoboy...</p>
     </div>
+
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -40,21 +65,22 @@
         const urlParams = new URLSearchParams(window.location.search);
         const pedidoId = urlParams.get('id');
 
+        // Inicializa mapa nítido do Google
         const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-15.78, -47.92], 4);
-        
-        // Camada Google Maps Nítida
         L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
             maxZoom: 20, subdomains:['mt0','mt1','mt2','mt3']
         }).addTo(map);
 
         const iconMoto = L.icon({ 
             iconUrl: 'https://cdn-icons-png.flaticon.com/512/71/71422.png', 
-            iconSize: [35, 35], 
-            iconAnchor: [17, 17] 
+            iconSize: [40, 40], iconAnchor: [20, 20] 
         });
 
-        let marker = null; let cliPos = null; let jaAvisou = false;
+        let marker = null;
+        let cliPos = null;
+        let jaAvisou = false;
 
+        // Tenta capturar localização do cliente para cálculo de distância
         navigator.geolocation.getCurrentPosition((c) => { 
             cliPos = { lat: c.coords.latitude, lng: c.coords.longitude }; 
         });
@@ -67,29 +93,65 @@
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
 
+        // Função de Chamada Sonora
+        function tocarAlerta() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // Tom agudo
+                gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.start();
+                setTimeout(() => oscillator.stop(), 1200); // Toca por 1.2 segundos
+            } catch (e) { console.log("Erro ao tocar áudio"); }
+        }
+
         if(pedidoId) {
             onValue(ref(db, 'pedidos/' + pedidoId), (snap) => {
                 const data = snap.val();
                 if(data && data.lat && data.lat !== 0) {
                     const pos = [data.lat, data.lng];
+                    
                     if(!marker) { 
                         marker = L.marker(pos, {icon: iconMoto}).addTo(map); 
                         map.setView(pos, 16); 
                     } else { 
                         marker.setLatLng(pos); 
                     }
+                    
+                    // Garante que o mapa renderize corretamente
+                    setTimeout(() => { map.invalidateSize(); }, 400);
 
                     if(cliPos) {
                         const d = calcDist(cliPos.lat, cliPos.lng, data.lat, data.lng);
-                        document.getElementById('msg').innerText = `Entregador a ${Math.round(d)}m de você.`;
+                        document.getElementById('msg').innerText = `O entregador está a ${Math.round(d)}m de distância.`;
+                        
+                        // PROTOCOLO DE CHEGADA (abaixo de 200 metros)
                         if(d < 200 && !jaAvisou) {
-                            if("vibrate" in navigator) navigator.vibrate([500, 200, 500]);
-                            document.getElementById('titulo').innerText = "🚨 ELE CHEGOU!";
+                            // 1. Chamada Tátil (Vibração)
+                            if("vibrate" in navigator) navigator.vibrate([500, 300, 500, 300, 500]);
+                            
+                            // 2. Chamada Sonora
+                            tocarAlerta();
+                            
+                            // 3. Chamada Visual
+                            document.body.classList.add('chegou');
+                            document.getElementById('titulo').innerHTML = "🚨 ELE CHEGOU!";
+                            document.getElementById('msg').innerHTML = "<b>Vá para o portão agora.</b><br>Ajude-nos a manter o silêncio!";
+                            
                             jaAvisou = true;
                         }
+                    } else {
+                        document.getElementById('msg').innerText = "Em rota. Acompanhe pelo mapa!";
                     }
                 }
             });
+        } else {
+            document.getElementById('titulo').innerText = "Erro no Link";
+            document.getElementById('msg').innerText = "Peça um novo link ao lojista.";
         }
     </script>
 </body>
