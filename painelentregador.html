@@ -3,24 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS Entregador - Entrega Silenciosa</title>
+    <title>Entregador - GPS Ativo</title>
     <style>
         body { font-family: sans-serif; background: #111827; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { width: 90%; max-width: 400px; background: #1f2937; padding: 30px; border-radius: 24px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); }
-        input { width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #374151; background: #111827; color: white; margin-bottom: 20px; font-size: 1.1rem; text-align: center; outline: none; }
-        input:focus { border-color: #10b981; }
-        .btn-gps { background: #10b981; color: white; border: none; padding: 20px; border-radius: 15px; width: 100%; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-gps:active { transform: scale(0.98); }
-        #status { margin-top: 20px; color: #9ca3af; font-size: 0.85rem; line-height: 1.5; }
-        .erro { color: #ef4444; font-weight: bold; }
-        .sucesso { color: #10b981; font-weight: bold; }
+        .card { width: 90%; max-width: 400px; background: #1f2937; padding: 30px; border-radius: 24px; text-align: center; }
+        input { width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #374151; background: #111827; color: white; margin-bottom: 20px; font-size: 1.1rem; text-align: center; }
+        .btn-gps { background: #10b981; color: white; border: none; padding: 20px; border-radius: 15px; width: 100%; font-size: 1.2rem; font-weight: bold; cursor: pointer; }
+        #status { margin-top: 20px; color: #9ca3af; font-size: 0.85rem; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h2 style="margin-top:0">GPS Entregador</h2>
-        <p style="font-size: 0.8rem; color: #9ca3af;">Digite o número do pedido para iniciar</p>
-        <input type="text" id="idPedido" placeholder="Ex: 1050">
+        <h2>Painel Entregador</h2>
+        <input type="text" id="idPedido" placeholder="Nº do Pedido">
         <button class="btn-gps" id="btn">INICIAR RASTREIO</button>
         <div id="status">Aguardando início da rota...</div>
     </div>
@@ -42,45 +37,15 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        const btn = document.getElementById('btn');
-        const statusTxt = document.getElementById('status');
-
-        btn.onclick = function() {
+        document.getElementById('btn').onclick = function() {
             const id = document.getElementById('idPedido').value.trim();
+            if(!id) return alert("Digite o Nº do pedido!");
             
-            if(!id) {
-                alert("Por favor, digite o número do pedido antes de iniciar.");
-                return;
-            }
-
-            statusTxt.innerText = "Buscando sinal de satélite...";
-            
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    btn.innerText = "SINAL ATIVO";
-                    btn.style.background = "#3b82f6";
-                    statusTxt.innerHTML = "<span class='sucesso'>📍 GPS CONECTADO!</span><br>Transmitindo Pedido: #" + id;
-                    
-                    // Atualização em tempo real
-                    navigator.geolocation.watchPosition((p) => {
-                        update(ref(db, 'pedidos/' + id), { 
-                            lat: p.coords.latitude, 
-                            lng: p.coords.longitude,
-                            ultimaAtualizacao: Date.now()
-                        });
-                    }, (err) => {
-                        statusTxt.innerHTML = "<span class='erro'>Perda de sinal GPS.</span>";
-                    }, { enableHighAccuracy: true });
-                },
-                (err) => {
-                    if(err.code === 1) {
-                        statusTxt.innerHTML = "<span class='erro'>GPS BLOQUEADO!</span><br>Autorize a localização no ícone de cadeado (topo da tela).";
-                    } else {
-                        statusTxt.innerHTML = "<span class='erro'>Erro técnico:</span> " + err.message;
-                    }
-                }, 
-                { enableHighAccuracy: true, timeout: 10000 }
-            );
+            this.innerText = "TRANSMITINDO...";
+            navigator.geolocation.watchPosition((p) => {
+                update(ref(db, 'pedidos/' + id), { lat: p.coords.latitude, lng: p.coords.longitude, u: Date.now() });
+                document.getElementById('status').innerText = "📍 Sinal ativo para o Pedido #" + id;
+            }, (e) => { alert("Erro GPS: " + e.message); }, { enableHighAccuracy: true });
         };
     </script>
 </body>
