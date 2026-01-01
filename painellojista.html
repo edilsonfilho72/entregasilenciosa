@@ -38,14 +38,18 @@
         const db = getDatabase(app);
 
         document.getElementById('btnDisparar').onclick = () => {
-            const id = document.getElementById('pedido').value || "PED123";
-            set(ref(db, 'pedidos/PED123'), { status: "A caminho", lat: 0, lng: 0 })
-            .then(() => {
-                const urlBase = window.location.href.replace('lojista.html', 'cliente.html');
-                document.getElementById('linkFinal').innerText = urlBase;
-                document.getElementById('linkArea').style.display = 'block';
-            });
-        };
+    const id = document.getElementById('pedido').value || "PED123";
+    
+    // 1. Envia para o Firebase
+    set(ref(db, 'pedidos/PED123'), { status: "A caminho", lat: 0, lng: 0 })
+    .then(() => {
+        // 2. GERA O LINK CORRETO (Ajustado para o novo nome minúsculo)
+        const urlBase = window.location.href.replace('painellojista.html', 'painelcliente.html');
+        
+        document.getElementById('linkFinal').innerText = urlBase;
+        document.getElementById('linkArea').style.display = 'block';
+    });
+};
 
         window.copiarLink = () => {
             navigator.clipboard.writeText(document.getElementById('linkFinal').innerText);
@@ -54,3 +58,4 @@
     </script>
 </body>
 </html>
+
