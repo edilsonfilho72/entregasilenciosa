@@ -51,8 +51,11 @@
         document.getElementById('btnDisparar').onclick = () => {
             const id = document.getElementById('pedido').value.trim() || Math.floor(Math.random() * 9000 + 1000);
             set(ref(db, 'pedidos/' + id), { status: "Em Rota", lat: 0, lng: 0, t: Date.now() }).then(() => {
-                const urlBase = window.location.href.replace('painellojista.html', 'painelcliente.html');
-                document.getElementById('linkFinal').innerText = `${urlBase}?id=${id}`;
+                const urlCompleta = window.location.href;
+                const base = urlCompleta.substring(0, urlCompleta.lastIndexOf('/'));
+                const urlFinal = `${base}/painelcliente.html?id=${id}`;
+                
+                document.getElementById('linkFinal').innerText = urlFinal;
                 document.getElementById('linkArea').style.display = 'block';
             });
         };
