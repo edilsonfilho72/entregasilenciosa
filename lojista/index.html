@@ -3,39 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão Lojista</title>
+    <title>Painel Lojista - Entrega Silenciosa</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50 pb-20">
-    <nav class="bg-slate-900 text-white p-4 flex justify-between items-center shadow-lg">
-        <h1 class="text-sm font-bold italic">PIZZARIA TOP - GESTÃO</h1>
-        <a href="marketing.html" class="text-[10px] bg-slate-800 px-3 py-1 rounded-full border border-slate-700 font-black uppercase tracking-widest">⚙️ Marketing</a>
-    </nav>
+<body class="bg-gray-50 pb-20">
 
-    <div class="p-4 grid grid-cols-2 gap-3">
-        <div class="bg-white p-4 rounded-2xl shadow-sm border-b-4 border-blue-500 text-center">
-            <p class="text-[9px] text-gray-400 font-black uppercase">Clientes Ativos</p>
-            <p class="text-2xl font-black text-slate-800">142</p>
+    <header class="bg-white p-6 flex justify-between items-center border-b border-gray-100">
+        <div>
+            <h1 class="text-xl font-black italic text-slate-800 uppercase tracking-tighter">Pizza<span class="text-blue-600">Top</span></h1>
+            <div class="flex items-center gap-2 mt-1">
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Loja Aberta • Online</span>
+            </div>
         </div>
-        <div class="bg-white p-4 rounded-2xl shadow-sm border-b-4 border-red-500 text-center">
-            <p class="text-[9px] text-red-500 font-black uppercase italic">Em Risco</p>
-            <p class="text-2xl font-black text-red-600">18</p>
-            <button onclick="alert('Disparando cupons de fidelidade...')" class="text-[9px] text-blue-600 font-bold underline italic">Recuperar Agora</button>
+        <div class="text-right">
+            <p class="text-[9px] font-black text-gray-400 uppercase">Faturamento Hoje</p>
+            <p class="text-lg font-black text-slate-900">R$ 1.240,00</p>
         </div>
-    </div>
+    </header>
+
+    <section class="grid grid-cols-2 gap-3 p-4">
+        <div class="bg-blue-600 p-4 rounded-[28px] text-white shadow-lg shadow-blue-100">
+            <p class="text-[9px] font-bold opacity-80 uppercase">Pedidos</p>
+            <p class="text-2xl font-black">24</p>
+        </div>
+        <div class="bg-slate-900 p-4 rounded-[28px] text-white shadow-lg shadow-slate-200">
+            <p class="text-[9px] font-bold opacity-80 uppercase">Ticket Médio</p>
+            <p class="text-2xl font-black text-blue-400">R$ 51</p>
+        </div>
+    </section>
+
+    <section class="px-4 mb-6">
+        <a href="cardapio.html" class="flex items-center justify-between bg-white p-5 rounded-[32px] shadow-sm border border-gray-100 hover:border-blue-500 transition-all active:scale-95 group">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-2xl group-hover:bg-blue-100 transition">
+                    📖
+                </div>
+                <div>
+                    <p class="font-black text-slate-800 text-sm uppercase tracking-tighter">Gerenciar Cardápio</p>
+                    <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Produtos e Preços</p>
+                </div>
+            </div>
+            <span class="text-gray-300 font-bold text-xl mr-2">❯</span>
+        </a>
+    </section>
+
+    <section class="px-4 mb-6">
+        <div class="bg-orange-50 border border-orange-100 p-5 rounded-[32px]">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h3 class="text-orange-800 font-black text-sm uppercase tracking-tighter">Alerta de Retenção</h3>
+                    <p class="text-[10px] text-orange-600 font-bold uppercase">18 clientes não compram há 15 dias</p>
+                </div>
+                <span class="text-2xl">⚡</span>
+            </div>
+            <button onclick="alert('Campanha de Cupons disparada para 18 clientes!')" class="w-full bg-orange-500 text-white font-black py-4 rounded-2xl text-[10px] uppercase tracking-widest shadow-lg shadow-orange-200 active:scale-95 transition">Recuperar Clientes Agora</button>
+        </div>
+    </section>
 
     <main class="px-4">
-        <h2 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">🔔 Pedidos Pendentes</h2>
-        <div class="bg-white p-5 rounded-3xl shadow-md border-2 border-blue-100 relative overflow-hidden">
-            <div class="absolute top-0 right-0 bg-blue-500 text-white text-[9px] px-3 py-1 font-bold rounded-bl-xl">NOVO</div>
-            <h3 class="font-black text-slate-800">EDILSON - #4592</h3>
-            <p class="text-[10px] text-gray-400 mb-4 font-bold uppercase tracking-tighter">Bairro: Centro • 2.4 km</p>
-            <div class="space-y-1 mb-5 text-sm font-bold text-slate-700 border-l-2 border-orange-500 pl-3">
-                <p>🛒 1x Calabresa Premium</p>
-                <p>🥤 1x Coca-Cola 2L</p>
+        <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 ml-2">Pedidos Recentes</h3>
+        
+        <div class="space-y-3">
+            <div class="bg-white p-5 rounded-[32px] shadow-sm border border-gray-100">
+                <div class="flex justify-between items-start mb-3">
+                    <div>
+                        <p class="font-black text-slate-800 uppercase text-xs">#4402 - Edilson Silva</p>
+                        <p class="text-[9px] text-gray-400 font-bold uppercase">Hoje às 19:45 • 2 itens</p>
+                    </div>
+                    <span class="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-[9px] font-black uppercase">Novo</span>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="this.innerHTML='Imprimindo...'; setTimeout(()=>this.innerHTML='Aceito ✓', 1000)" class="flex-1 bg-slate-900 text-white font-black py-3 rounded-xl text-[10px] uppercase tracking-widest">Aceitar</button>
+                    <button class="bg-gray-100 text-gray-400 font-black px-4 py-3 rounded-xl text-[10px] uppercase">✖</button>
+                </div>
             </div>
-            <button onclick="alert('Pedido Impresso e enviado para a cozinha!')" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-xs shadow-xl active:scale-95 transition uppercase tracking-widest">Aceitar e Imprimir</button>
         </div>
     </main>
+
 </body>
 </html>
