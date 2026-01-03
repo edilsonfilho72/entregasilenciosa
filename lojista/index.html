@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão Lojista</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 pb-20">
+    <nav class="bg-slate-900 text-white p-4 flex justify-between items-center shadow-lg">
+        <h1 class="text-sm font-bold italic">PIZZARIA TOP - GESTÃO</h1>
+        <a href="marketing.html" class="text-[10px] bg-slate-800 px-3 py-1 rounded-full border border-slate-700 font-black uppercase tracking-widest">⚙️ Marketing</a>
+    </nav>
+
+    <div class="p-4 grid grid-cols-2 gap-3">
+        <div class="bg-white p-4 rounded-2xl shadow-sm border-b-4 border-blue-500 text-center">
+            <p class="text-[9px] text-gray-400 font-black uppercase">Clientes Ativos</p>
+            <p class="text-2xl font-black text-slate-800">142</p>
+        </div>
+        <div class="bg-white p-4 rounded-2xl shadow-sm border-b-4 border-red-500 text-center">
+            <p class="text-[9px] text-red-500 font-black uppercase italic">Em Risco</p>
+            <p class="text-2xl font-black text-red-600">18</p>
+            <button onclick="alert('Disparando cupons de fidelidade...')" class="text-[9px] text-blue-600 font-bold underline italic">Recuperar Agora</button>
+        </div>
+    </div>
+
+    <main class="px-4">
+        <h2 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">🔔 Pedidos Pendentes</h2>
+        <div class="bg-white p-5 rounded-3xl shadow-md border-2 border-blue-100 relative overflow-hidden">
+            <div class="absolute top-0 right-0 bg-blue-500 text-white text-[9px] px-3 py-1 font-bold rounded-bl-xl">NOVO</div>
+            <h3 class="font-black text-slate-800">EDILSON - #4592</h3>
+            <p class="text-[10px] text-gray-400 mb-4 font-bold uppercase tracking-tighter">Bairro: Centro • 2.4 km</p>
+            <div class="space-y-1 mb-5 text-sm font-bold text-slate-700 border-l-2 border-orange-500 pl-3">
+                <p>🛒 1x Calabresa Premium</p>
+                <p>🥤 1x Coca-Cola 2L</p>
+            </div>
+            <button onclick="alert('Pedido Impresso e enviado para a cozinha!')" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-xs shadow-xl active:scale-95 transition uppercase tracking-widest">Aceitar e Imprimir</button>
+        </div>
+    </main>
+</body>
+</html>
