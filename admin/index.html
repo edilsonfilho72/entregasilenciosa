@@ -6,58 +6,52 @@
     <title>Master Admin - Entrega Silenciosa</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 p-4">
-    <header class="mb-8">
-        <h1 class="text-2xl font-black text-gray-800 text-center uppercase tracking-tighter italic">🚀 Painel Master SaaS</h1>
-        <p class="text-gray-500 text-center text-[10px] font-bold uppercase tracking-widest">Controle de Licenciamento Global</p>
+<body class="bg-slate-50 p-6 pb-20">
+    <header class="mb-10 text-center">
+        <h1 class="text-2xl font-black text-slate-900 uppercase italic tracking-tighter">🚀 Master <span class="text-blue-600">SaaS</span></h1>
+        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">Controle de Unidades e Licenças</p>
     </header>
 
-    <section class="max-w-4xl mx-auto bg-white p-6 rounded-[32px] shadow-sm mb-8 border border-gray-200">
-        <h2 class="text-xs font-black mb-4 text-blue-600 uppercase tracking-widest">Gerar Nova Licença</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input id="nomeLoja" type="text" placeholder="Nome da Unidade (Ex: Belo Horizonte)" class="bg-gray-50 border-2 border-gray-100 p-4 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none font-bold">
-            <select id="segmento" class="bg-gray-50 border-2 border-gray-100 p-4 rounded-2xl font-bold text-gray-600">
+    <section class="max-w-md mx-auto bg-white p-8 rounded-[40px] shadow-2xl shadow-blue-100 border border-gray-100 mb-10">
+        <h2 class="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-6">Criar Nova Unidade</h2>
+        <div class="space-y-4">
+            <input id="nomeLoja" type="text" placeholder="Nome da Loja ou Cidade" class="w-full bg-gray-50 border-2 border-gray-100 p-4 rounded-2xl font-bold focus:border-blue-500 outline-none transition">
+            <select id="segmento" class="w-full bg-gray-50 border-2 border-gray-100 p-4 rounded-2xl font-bold text-gray-500 outline-none">
                 <option value="delivery">Gastronomia / Delivery</option>
-                <option value="servico">Serviços / Agendamento</option>
                 <option value="varejo">Varejo Geral</option>
             </select>
-            <button onclick="gerarChave()" class="bg-blue-600 text-white font-black py-4 rounded-2xl hover:bg-blue-700 transition shadow-lg shadow-blue-200 uppercase text-xs tracking-widest md:col-span-2">Gerar Token de Acesso</button>
+            <button onclick="gerarChave()" class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl shadow-xl shadow-blue-200 uppercase text-xs tracking-widest active:scale-95 transition">Gerar Token de Acesso</button>
         </div>
     </section>
 
-    <section class="max-w-4xl mx-auto bg-white p-6 rounded-[32px] shadow-sm border border-gray-200">
-        <h2 class="text-[10px] font-black mb-4 text-gray-400 uppercase tracking-widest">Unidades em Operação</h2>
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
-                <thead>
-                    <tr class="border-b text-gray-400 text-[10px] uppercase font-black">
-                        <th class="py-2">Loja / Cidade</th>
-                        <th class="py-2">Chave Gerada</th>
-                        <th class="py-2">Status</th>
-                    </tr>
-                </thead>
-                <tbody id="listaLojistas">
-                    <tr class="border-b text-sm">
-                        <td class="py-4 font-bold text-gray-700">Pizzaria Exemplo</td>
-                        <td class="py-4"><code class="bg-blue-50 text-blue-600 p-1 px-2 rounded text-[10px] font-black">TOKEN-MASTER-77</code></td>
-                        <td class="py-4"><span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-[9px] font-black">ATIVO</span></td>
-                    </tr>
-                </tbody>
-            </table>
+    <section class="max-w-md mx-auto">
+        <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 ml-4">Unidades Ativas</h3>
+        <div id="listaLojistas" class="space-y-3">
+            <div class="bg-white p-5 rounded-[32px] border border-gray-100 flex justify-between items-center shadow-sm">
+                <div>
+                    <p class="font-black text-slate-800 uppercase text-sm">Pizzaria Exemplo</p>
+                    <p class="text-[9px] font-bold text-blue-600 uppercase">TOKEN-77-MASTER</p>
+                </div>
+                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">Ativo</span>
+            </div>
         </div>
     </section>
 
     <script>
         function gerarChave() {
             const nome = document.getElementById('nomeLoja').value;
-            const token = "TOKEN-" + Math.random().toString(36).substr(2, 9).toUpperCase();
             if(!nome) return alert("Digite o nome da unidade!");
-            document.getElementById('listaLojistas').innerHTML += `
-                <tr class="border-b text-sm">
-                    <td class="py-4 font-bold text-gray-700">${nome}</td>
-                    <td class="py-4"><code class="bg-blue-50 text-blue-600 p-1 px-2 rounded text-[10px] font-black">${token}</code></td>
-                    <td class="py-4"><span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-[9px] font-black">ATIVO</span></td>
-                </tr>`;
+            const token = "TOKEN-" + Math.random().toString(36).substr(2, 6).toUpperCase();
+            
+            const item = `
+                <div class="bg-white p-5 rounded-[32px] border border-blue-200 flex justify-between items-center shadow-sm animate-bounce">
+                    <div>
+                        <p class="font-black text-slate-800 uppercase text-sm">${nome}</p>
+                        <p class="text-[9px] font-bold text-blue-600 uppercase">${token}</p>
+                    </div>
+                    <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">Ativo</span>
+                </div>`;
+            document.getElementById('listaLojistas').innerHTML = item + document.getElementById('listaLojistas').innerHTML;
             document.getElementById('nomeLoja').value = "";
         }
     </script>
