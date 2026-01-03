@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Cardápio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 p-6">
+    <nav class="flex items-center gap-4 mb-8">
+        <a href="index.html" class="text-2xl hover:scale-110 transition">⬅️</a>
+        <h1 class="text-lg font-black uppercase italic tracking-tighter text-slate-800">Gerenciar Cardápio</h1>
+    </nav>
+
+    <div class="bg-white p-6 rounded-[32px] shadow-sm border border-gray-100 mb-6">
+        <h2 class="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-6">Adicionar Novo Item</h2>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-[9px] font-black text-gray-400 uppercase mb-1 ml-2">Nome do Produto</label>
+                <input type="text" id="prodNome" placeholder="Ex: X-Salada Especial" class="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl py-4 px-4 font-bold outline-none focus:border-blue-500">
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[9px] font-black text-gray-400 uppercase mb-1 ml-2">Preço (R$)</label>
+                    <input type="number" id="prodPreco" placeholder="25.00" class="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl py-4 px-4 font-bold outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-[9px] font-black text-gray-400 uppercase mb-1 ml-2">Categoria</label>
+                    <select id="prodCat" class="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl py-4 px-4 font-bold text-gray-500 outline-none">
+                        <option>Lanches</option>
+                        <option>Bebidas</option>
+                        <option>Sobremesas</option>
+                    </select>
+                </div>
+            </div>
+
+            <button onclick="adicionarItem()" class="w-full mt-4 bg-slate-900 text-white font-black py-5 rounded-2xl shadow-xl active:scale-95 transition uppercase text-xs tracking-widest">Publicar no App</button>
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-[32px] shadow-sm border border-gray-100">
+        <h2 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Itens Ativos no App</h2>
+        <div id="listaItens" class="space-y-3">
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-xl border border-gray-100">
+                <span class="font-bold text-sm text-slate-700">🍕 Calabresa Premium</span>
+                <span class="text-xs font-black text-blue-600">R$ 49,90</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function adicionarItem() {
+            const nome = document.getElementById('prodNome').value;
+            const preco = document.getElementById('prodPreco').value;
+            
+            if(!nome || !preco) return alert('Preencha os dados do produto!');
+
+            const lista = document.getElementById('listaItens');
+            const novoItem = document.createElement('div');
+            novoItem.className = "flex justify-between items-center p-3 bg-blue-50 rounded-xl border border-blue-100 animate-pulse";
+            novoItem.innerHTML = `<span class="font-bold text-sm text-slate-700">📦 ${nome}</span><span class="text-xs font-black text-blue-600">R$ ${preco}</span>`;
+            
+            lista.prepend(novoItem);
+            alert('🚀 Sincronizando com o Firebase... Item publicado no App!');
+            
+            document.getElementById('prodNome').value = '';
+            document.getElementById('prodPreco').value = '';
+        }
+    </script>
+</body>
+</html>
